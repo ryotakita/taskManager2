@@ -43,16 +43,14 @@ where
     let chunks = Layout::default()
         .constraints(
             [
-                Constraint::Length(9),
-                Constraint::Min(8),
-                Constraint::Length(7),
+                Constraint::Percentage(80),
+                Constraint::Percentage(20),
             ]
             .as_ref(),
         )
         .split(area);
-    draw_gauges(f, app, chunks[0]);
-    draw_charts(f, app, chunks[1]);
-    draw_text(f, chunks[2]);
+    draw_charts(f, app, chunks[0]);
+    draw_text(f, chunks[1]);
 }
 
 fn draw_gauges<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
