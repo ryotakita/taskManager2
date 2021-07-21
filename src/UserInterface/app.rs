@@ -145,7 +145,7 @@ impl<'a> App<'a> {
         let mut sin_signal2 = SinSignal::new(0.1, 2.0, 10.0);
         let sin2_points = sin_signal2.by_ref().take(200).collect();
 
-        let mut taskList: Vec<Task> = Vec::new();
+        let mut task_list: Vec<Task> = Vec::new();
         {
             for (i, task_str) in TASKS.iter().enumerate() {
                 let task = Task {
@@ -153,7 +153,7 @@ impl<'a> App<'a> {
                     client: CLIENTS[i],
                     dates: DATES[i],
                 };
-                taskList.push(task);
+                task_list.push(task);
             }
         }
         App {
@@ -167,7 +167,7 @@ impl<'a> App<'a> {
                 points: sparkline_points,
                 tick_rate: 1,
             },
-            tasks: StatefulList::with_items(taskList),
+            tasks: StatefulList::with_items(task_list),
             logs: StatefulList::with_items(LOGS.to_vec()),
             signals: Signals {
                 sin1: Signal {
