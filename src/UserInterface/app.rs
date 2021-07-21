@@ -237,6 +237,12 @@ impl<'a> App<'a> {
             't' => {
                 self.show_chart = !self.show_chart;
             }
+            'j' => {
+                self.on_down();
+            }
+            'k' => {
+                self.on_up();
+            }
             _ => {}
         }
     }
