@@ -6,6 +6,18 @@ const TASKS: [&str; 24] = [
     "Item20", "Item21", "Item22", "Item23", "Item24",
 ];
 
+const CLIENTS: [&str; 24] = [
+    "Clients1", "Clients2", "Clients3", "Clients4", "Clients5", "Clients6", "Clients7", "Clients8", "Clients9", "Clients10",
+    "Clients11", "Clients12", "Clients13", "Clients14", "Clients15", "Clients16", "Clients17", "Clients18", "Clients19",
+    "Clients20", "Clients21", "Clients22", "Clients23", "Clients24",
+];
+
+const DATES: [&str; 24] = [
+    "21-07-1", "21-07-2", "21-07-3", "21-07-4", "21-07-5", "21-07-6", "21-07-7", "21-07-8", "21-07-9", "21-07-10",
+    "21-07-11", "21-07-12", "21-07-13", "21-07-14", "21-07-15", "21-07-16", "21-07-17", "21-07-18", "21-07-19",
+    "21-07-20", "21-07-21", "21-07-22", "21-07-23", "21-07-24",
+];
+
 const LOGS: [(&str, &str); 26] = [
     ("Event1", "INFO"),
     ("Event2", "INFO"),
@@ -103,6 +115,12 @@ pub struct Server<'a> {
     pub status: &'a str,
 }
 
+pub struct Task <'a> {
+    pub taskname: &'a str,
+    pub client: &'a str,
+    pub dates: &'a str,
+}
+
 pub struct App<'a> {
     pub title: &'a str,
     pub should_quit: bool,
@@ -110,7 +128,7 @@ pub struct App<'a> {
     pub show_chart: bool,
     pub progress: f64,
     pub sparkline: Signal<RandomSignal>,
-    pub tasks: StatefulList<&'a str>,
+    pub tasks: StatefulList<Task<'a>>,
     pub logs: StatefulList<(&'a str, &'a str)>,
     pub signals: Signals,
     pub barchart: Vec<(&'a str, u64)>,
@@ -126,6 +144,18 @@ impl<'a> App<'a> {
         let sin1_points = sin_signal.by_ref().take(100).collect();
         let mut sin_signal2 = SinSignal::new(0.1, 2.0, 10.0);
         let sin2_points = sin_signal2.by_ref().take(200).collect();
+
+        let mut taskList: Vec<Task> = Vec::new();
+        {
+            for (i, task_str) in TASKS.iter().enumerate() {
+                let task = Task {
+                    taskname: task_str,
+                    client: CLIENTS[i],
+                    dates: DATES[i],
+                };
+                taskList.push(task);
+            }
+        }
         App {
             title,
             should_quit: false,
@@ -137,7 +167,7 @@ impl<'a> App<'a> {
                 points: sparkline_points,
                 tick_rate: 1,
             },
-            tasks: StatefulList::with_items(TASKS.to_vec()),
+            tasks: StatefulList::with_items(taskList),
             logs: StatefulList::with_items(LOGS.to_vec()),
             signals: Signals {
                 sin1: Signal {

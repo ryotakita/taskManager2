@@ -122,80 +122,51 @@ where
         .split(area);
     {
         let chunks = Layout::default()
-            .constraints([Constraint::Length(3), Constraint::Percentage(100)].as_ref())
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(20), Constraint::Percentage(30)].as_ref())
+            .direction(Direction::Horizontal)
             .split(chunks[0]);
-        {
-            let chunks = Layout::default()
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(20), Constraint::Percentage(30)].as_ref())
-                .direction(Direction::Horizontal)
-                .split(chunks[0]);
 
-            // Draw tasks
-            let tasks: Vec<ListItem> = app
-                .tasks
-                .items
-                .iter()
-                .map(|i| ListItem::new(vec![Spans::from(Span::raw(*i))]))
-                .collect();
-            let tasks = List::new(tasks)
-                .block(Block::default().borders(Borders::ALL).title("List"))
-                //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
-                .highlight_style(Style::default().fg(Color::Red))
-                .highlight_symbol("> ");
-            f.render_stateful_widget(tasks, chunks[0], &mut app.tasks.state);
+        // Draw tasks
+        let tasks: Vec<ListItem> = app
+            .tasks
+            .items
+            .iter()
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.taskname))]))
+            .collect();
+        let tasks = List::new(tasks)
+            .block(Block::default().borders(Borders::ALL).title("Task"))
+            //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
+            .highlight_style(Style::default().fg(Color::Red))
+            .highlight_symbol("> ");
+        f.render_stateful_widget(tasks, chunks[0], &mut app.tasks.state);
 
-            // Draw logs
-            let info_style = Style::default().fg(Color::Blue);
-            let warning_style = Style::default().fg(Color::Yellow);
-            let error_style = Style::default().fg(Color::Magenta);
-            let critical_style = Style::default().fg(Color::Red);
-            let logs: Vec<ListItem> = app
-                .logs
-                .items
-                .iter()
-                .map(|&(evt, level)| {
-                    let s = match level {
-                        "ERROR" => error_style,
-                        "CRITICAL" => critical_style,
-                        "WARNING" => warning_style,
-                        _ => info_style,
-                    };
-                    let content = vec![Spans::from(vec![
-                        Span::styled(format!("{:<9}", level), s),
-                        Span::raw(evt),
-                    ])];
-                    ListItem::new(content)
-                })
-                .collect();
-            let logs = List::new(logs).block(Block::default().borders(Borders::ALL).title("List"));
-            f.render_stateful_widget(logs, chunks[2], &mut app.logs.state);
+        // Draw logs
+        let clients: Vec<ListItem> = app
+            .tasks
+            .items
+            .iter()
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.client))]))
+            .collect();
+        let clients = List::new(clients)
+            .block(Block::default().borders(Borders::ALL).title("Client"))
+            //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
+            .highlight_style(Style::default().fg(Color::Red))
+            .highlight_symbol("> ");
+        f.render_stateful_widget(clients, chunks[1], &mut app.tasks.state);
 
-            // Draw logs
-            let info_style = Style::default().fg(Color::Blue);
-            let warning_style = Style::default().fg(Color::Yellow);
-            let error_style = Style::default().fg(Color::Magenta);
-            let critical_style = Style::default().fg(Color::Red);
-            let logs: Vec<ListItem> = app
-                .logs
-                .items
-                .iter()
-                .map(|&(evt, level)| {
-                    let s = match level {
-                        "ERROR" => error_style,
-                        "CRITICAL" => critical_style,
-                        "WARNING" => warning_style,
-                        _ => info_style,
-                    };
-                    let content = vec![Spans::from(vec![
-                        Span::styled(format!("{:<9}", level), s),
-                        Span::raw(evt),
-                    ])];
-                    ListItem::new(content)
-                })
-                .collect();
-            let logs = List::new(logs).block(Block::default().borders(Borders::ALL).title("List"));
-            f.render_stateful_widget(logs, chunks[1], &mut app.logs.state);
-        }
+        // Draw logs
+        let dates: Vec<ListItem> = app
+            .tasks
+            .items
+            .iter()
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.dates))]))
+            .collect();
+        let dates = List::new(dates)
+            .block(Block::default().borders(Borders::ALL).title("Date"))
+            //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
+            .highlight_style(Style::default().fg(Color::Red))
+            .highlight_symbol("> ");
+        f.render_stateful_widget(dates, chunks[2], &mut app.tasks.state);
     }
     if app.show_chart {
         let x_labels = vec![
