@@ -122,11 +122,11 @@ where
         .split(area);
     {
         let chunks = Layout::default()
-            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+            .constraints([Constraint::Length(3), Constraint::Percentage(100)].as_ref())
             .split(chunks[0]);
         {
             let chunks = Layout::default()
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+                .constraints([Constraint::Percentage(50), Constraint::Percentage(20), Constraint::Percentage(30)].as_ref())
                 .direction(Direction::Horizontal)
                 .split(chunks[0]);
 
@@ -168,28 +168,34 @@ where
                 })
                 .collect();
             let logs = List::new(logs).block(Block::default().borders(Borders::ALL).title("List"));
+            f.render_stateful_widget(logs, chunks[2], &mut app.logs.state);
+
+            // Draw logs
+            let info_style = Style::default().fg(Color::Blue);
+            let warning_style = Style::default().fg(Color::Yellow);
+            let error_style = Style::default().fg(Color::Magenta);
+            let critical_style = Style::default().fg(Color::Red);
+            let logs: Vec<ListItem> = app
+                .logs
+                .items
+                .iter()
+                .map(|&(evt, level)| {
+                    let s = match level {
+                        "ERROR" => error_style,
+                        "CRITICAL" => critical_style,
+                        "WARNING" => warning_style,
+                        _ => info_style,
+                    };
+                    let content = vec![Spans::from(vec![
+                        Span::styled(format!("{:<9}", level), s),
+                        Span::raw(evt),
+                    ])];
+                    ListItem::new(content)
+                })
+                .collect();
+            let logs = List::new(logs).block(Block::default().borders(Borders::ALL).title("List"));
             f.render_stateful_widget(logs, chunks[1], &mut app.logs.state);
         }
-
-        let barchart = BarChart::default()
-            .block(Block::default().borders(Borders::ALL).title("Bar chart"))
-            .data(&app.barchart)
-            .bar_width(3)
-            .bar_gap(2)
-            .bar_set(if app.enhanced_graphics {
-                symbols::bar::NINE_LEVELS
-            } else {
-                symbols::bar::THREE_LEVELS
-            })
-            .value_style(
-                Style::default()
-                    .fg(Color::Black)
-                    .bg(Color::Green)
-                    .add_modifier(Modifier::ITALIC),
-            )
-            .label_style(Style::default().fg(Color::Yellow))
-            .bar_style(Style::default().fg(Color::Green));
-        f.render_widget(barchart, chunks[1]);
     }
     if app.show_chart {
         let x_labels = vec![
