@@ -237,36 +237,35 @@ where
     B: Backend,
 {
     let text = vec![
-        Spans::from("This is a paragraph with several lines. You can change style your text the way you want"),
-        Spans::from(""),
         Spans::from(vec![
-            Span::from("For example: "),
-            Span::styled("under", Style::default().fg(Color::Red)),
-            Span::raw(" "),
-            Span::styled("the", Style::default().fg(Color::Green)),
-            Span::raw(" "),
-            Span::styled("rainbow", Style::default().fg(Color::Blue)),
-            Span::raw("."),
+            Span::from("キー: "),
         ]),
         Spans::from(vec![
-            Span::raw("Oh and if you didn't "),
-            Span::styled("notice", Style::default().add_modifier(Modifier::ITALIC)),
-            Span::raw(" you can "),
-            Span::styled("automatically", Style::default().add_modifier(Modifier::BOLD)),
-            Span::raw(" "),
-            Span::styled("wrap", Style::default().add_modifier(Modifier::REVERSED)),
-            Span::raw(" your "),
-            Span::styled("text", Style::default().add_modifier(Modifier::UNDERLINED)),
-            Span::raw(".")
+            Span::raw("  key\""),
+            Span::styled("c", Style::default().add_modifier(Modifier::BOLD).fg(Color::Red)),
+            Span::raw("\": "),
+            Span::from("完了したタスクに✔を入れる"),
+        ]),
+        Spans::from(vec![
+            Span::raw("  key\""),
+            Span::styled("d", Style::default().add_modifier(Modifier::BOLD).fg(Color::Blue)),
+            Span::raw("\": "),
+            Span::from("タスクを消去する"),
+        ]),
+        Spans::from(vec![
+            Span::raw("  key\""),
+            Span::styled("a", Style::default().add_modifier(Modifier::BOLD).fg(Color::Green)),
+            Span::raw("\": "),
+            Span::from("タスクを追加する"),
         ]),
         Spans::from(
             "One more thing is that it should display unicode characters: 10€"
         ),
     ];
     let block = Block::default().borders(Borders::ALL).title(Span::styled(
-        "Footer",
+        "TaskManager_Ver1.0.0.0",
         Style::default()
-            .fg(Color::Magenta)
+            .fg(Color::Yellow)
             .add_modifier(Modifier::BOLD),
     ));
     let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
