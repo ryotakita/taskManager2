@@ -184,7 +184,7 @@ impl<'a> App<'a> {
             title,
             should_quit: false,
             tabs: TabsState::new(vec!["Tab0", "Tab1", "Tab2"]),
-            show_chart: true,
+            show_chart: false,
             progress: 0.0,
             sparkline: Signal {
                 source: rand_signal,
