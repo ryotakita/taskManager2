@@ -3,7 +3,8 @@ mod UserInterface;
 #[allow(dead_code)]
 mod util;
 
-use crate::UserInterface::{ui, App};
+use crate::UserInterface::{ui, App, Task};
+use once_cell::sync::OnceCell;
 use argh::FromArgs;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode},
@@ -36,6 +37,7 @@ struct Cli {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+
     let cli: Cli = argh::from_env();
 
     enable_raw_mode()?;

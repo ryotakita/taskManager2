@@ -131,7 +131,7 @@ where
             .tasks
             .items
             .iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.taskname))]))
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.taskname))]))
             .collect();
         let tasks = List::new(tasks)
             .block(Block::default().borders(Borders::ALL).title("Task"))
@@ -145,7 +145,7 @@ where
             .tasks
             .items
             .iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.client))]))
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.client))]))
             .collect();
         let clients = List::new(clients)
             .block(Block::default().borders(Borders::ALL).title("Client"))
@@ -159,7 +159,7 @@ where
             .tasks
             .items
             .iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.dates))]))
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.dates))]))
             .collect();
         let dates = List::new(dates)
             .block(Block::default().borders(Borders::ALL).title("Date"))

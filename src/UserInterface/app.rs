@@ -1,4 +1,8 @@
 use crate::util::{RandomSignal, SinSignal, StatefulList, TabsState};
+use std::fs::File;
+use std::io::{self, BufRead, BufReader};
+use once_cell::sync::OnceCell;
+use main;
 
 const TASKS: [&str; 24] = [
     "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9", "Item10",
@@ -115,10 +119,21 @@ pub struct Server<'a> {
     pub status: &'a str,
 }
 
-pub struct Task <'a> {
-    pub taskname: &'a str,
-    pub client: &'a str,
-    pub dates: &'a str,
+#[derive(Clone)]
+pub struct Task  {
+    pub taskname: String,
+    pub client: String,
+    pub dates: String,
+}
+
+impl Task {
+    pub fn new(taskname: String, client: String, dates: String) -> Self {
+        Task {
+            taskname: taskname.to_string().clone(),
+            client: client.to_string().clone(),
+            dates: dates.to_string().clone(),
+        }
+    }
 }
 
 pub struct App<'a> {
@@ -128,7 +143,7 @@ pub struct App<'a> {
     pub show_chart: bool,
     pub progress: f64,
     pub sparkline: Signal<RandomSignal>,
-    pub tasks: StatefulList<Task<'a>>,
+    pub tasks: StatefulList<Task>,
     pub logs: StatefulList<(&'a str, &'a str)>,
     pub signals: Signals,
     pub barchart: Vec<(&'a str, u64)>,
@@ -146,16 +161,25 @@ impl<'a> App<'a> {
         let sin2_points = sin_signal2.by_ref().take(200).collect();
 
         let mut task_list: Vec<Task> = Vec::new();
-        {
-            for (i, task_str) in TASKS.iter().enumerate() {
-                let task = Task {
-                    taskname: task_str,
-                    client: CLIENTS[i],
-                    dates: DATES[i],
-                };
-                task_list.push(task);
+        for task_str in BufReader::new(File::open("task.txt").unwrap()).lines() {
+            let mut count = 0;
+            let mut name = String::new();
+            let mut client = String::new();
+            let mut date = String::new();
+            let mut isDone = true;
+            for str in task_str.unwrap().split(',') {
+                match count {
+                    0 => { name = str.to_string(); },
+                    1 => { client = str.to_string(); },
+                    2 => { date = str.to_string(); },
+                    3 => { if str == "true" {isDone = true;} else {isDone = false;} }
+                    _ => { break; },
+                }
+                count+=1;
             }
+            task_list.push(Task::new(name, client, date));
         }
+
         App {
             title,
             should_quit: false,
