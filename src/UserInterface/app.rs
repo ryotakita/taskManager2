@@ -270,11 +270,17 @@ impl<'a> App<'a> {
                 self.on_up();
             }
             'c' => {
-                // TODO:逆順で回っていったときに、✔がずれる。GetCursorがまずいか？
-                self.tasks.items[(pos.1 - 4) as usize].isDone = !self.tasks.items[(pos.1 - 4) as usize].isDone;
+                match self.tasks.state.selected() {
+                    Some(x) => {self.tasks.items[x].isDone = !self.tasks.items[x].isDone;},
+                    None  => {}
+                }
             }
             _ => {}
         }
+    }
+
+    pub fn add_task(&mut self) {
+
     }
 
     pub fn on_tick(&mut self) {
