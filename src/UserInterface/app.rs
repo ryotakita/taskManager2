@@ -124,14 +124,16 @@ pub struct Task  {
     pub taskname: String,
     pub client: String,
     pub dates: String,
+    pub isDone: bool,
 }
 
 impl Task {
-    pub fn new(taskname: String, client: String, dates: String) -> Self {
+    pub fn new(taskname: String, client: String, dates: String, isDone: bool) -> Self {
         Task {
             taskname: taskname.to_string().clone(),
             client: client.to_string().clone(),
             dates: dates.to_string().clone(),
+            isDone: isDone,
         }
     }
 }
@@ -177,7 +179,7 @@ impl<'a> App<'a> {
                 }
                 count+=1;
             }
-            task_list.push(Task::new(name, client, date));
+            task_list.push(Task::new(name, client, date, isDone));
         }
 
         App {
@@ -253,7 +255,7 @@ impl<'a> App<'a> {
         self.tabs.previous();
     }
 
-    pub fn on_key(&mut self, c: char) {
+    pub fn on_key(&mut self, c: char, pos: (u16, u16)) {
         match c {
             'q' => {
                 self.should_quit = true;
@@ -266,6 +268,10 @@ impl<'a> App<'a> {
             }
             'k' => {
                 self.on_up();
+            }
+            'c' => {
+                // TODO:逆順で回っていったときに、✔がずれる。GetCursorがまずいか？
+                self.tasks.items[(pos.1 - 4) as usize].isDone = !self.tasks.items[(pos.1 - 4) as usize].isDone;
             }
             _ => {}
         }

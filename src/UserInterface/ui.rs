@@ -131,7 +131,7 @@ where
             .tasks
             .items
             .iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.taskname))]))
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}{}", (if i.isDone {"✔"} else {" "}), i.taskname)))]))
             .collect();
         let tasks = List::new(tasks)
             .block(Block::default().borders(Borders::ALL).title("Task"))
