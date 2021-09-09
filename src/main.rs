@@ -36,6 +36,24 @@ struct Cli {
     enhanced_graphics: bool,
 }
 
+// TODO:日本語対応
+pub fn read_line() -> Result<String, Box<dyn Error>> {
+    let mut line = String::new();
+    while let CEvent::Key(KeyEvent { code, .. }) = event::read()? {
+        match code {
+            KeyCode::Enter => {
+                break;
+            }
+            KeyCode::Char(c) => {
+                line.push(c);
+            }
+            _ => {}
+        }
+    }
+
+    Ok(line)
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
 
     let cli: Cli = argh::from_env();
@@ -82,12 +100,21 @@ fn main() -> Result<(), Box<dyn Error>> {
             Event::Input(event) => match event.modifiers {
                 KeyModifiers::NONE => {
                     match event.code {
-                        KeyCode::Char(c) => app.on_key(c, terminal.get_cursor().unwrap()),
+                        // TODO:本当は、on_keyの実装はmain内でやるべき？'/'の実装はappでやりたいが。。
+                        KeyCode::Char(c) => {
+                            if c != '/' {
+                                app.on_key(c, terminal.get_cursor().unwrap());
+                            } else {
+                                let search = read_line().unwrap();
+                                app.search_string_in_this_path(&search);
+                            }
+                        }
                         KeyCode::Left => app.on_left(),
                         KeyCode::Up => app.on_up(),
                         KeyCode::Right => app.on_right(),
                         KeyCode::Down => app.on_down(),
                         KeyCode::Enter => app.on_enter_dir(),
+                        KeyCode::Esc => app.on_all_disp(),
                         _ => {},
                     }
                 },

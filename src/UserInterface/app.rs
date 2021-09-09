@@ -335,6 +335,24 @@ impl<'a> App<'a> {
         }
     }
 
+    pub fn on_all_disp(&mut self) {
+        match self.folders.state.selected() {
+            Some(x) => {
+                let path_target = &self.folders.items[x].folder_name;
+                let path_target = path::Path::new(path_target);
+                let path_target = path::PathBuf::from(path_target);
+                let path_parent = path_target.parent();
+                match path_parent {
+                    Some(x) => {
+                        self.folders = self.next_dir(x.to_str().unwrap());
+                    },
+                    None => {},
+                }
+            },
+            _ => {}
+        }
+    }
+
     // TODO:ファイル読込処理
     pub fn get_path_of_number(&mut self, number: usize) -> path::PathBuf {
         let path_target = match number {
@@ -348,6 +366,20 @@ impl<'a> App<'a> {
         let path_target = path::Path::new(path_target);
 
         path::PathBuf::from(path_target)
+    }
+
+    pub fn search_string_in_this_path(&mut self, search: &str) {
+        // TODO:filterがなぜか使えない...
+        let mut lst_new = Vec::new();
+        for i in self.folders.items.iter() {
+            match i.folder_name.to_lowercase().contains(&search.to_lowercase()) {
+                true => {lst_new.push(i.clone());},
+                false => {}
+            }
+        }
+
+        
+        self.folders = StatefulList::with_items(lst_new);
     }
 
     pub fn on_key(&mut self, c: char, pos: (u16, u16)) {
