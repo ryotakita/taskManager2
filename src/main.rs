@@ -7,7 +7,7 @@ use crate::UserInterface::{ui, App, Task};
 use once_cell::sync::OnceCell;
 use argh::FromArgs;
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode, KeyEvent, KeyModifiers},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -79,14 +79,31 @@ fn main() -> Result<(), Box<dyn Error>> {
     loop {
         terminal.draw(|f| ui::draw(f, &mut app))?;
         match rx.recv()? {
-            Event::Input(event) => match event.code {
-                KeyCode::Char(c) => app.on_key(c, terminal.get_cursor().unwrap()),
-                KeyCode::Left => app.on_left(),
-                KeyCode::Up => app.on_up(),
-                KeyCode::Right => app.on_right(),
-                KeyCode::Down => app.on_down(),
-                KeyCode::Enter => app.on_enter_dir(),
-                _ => {}
+            Event::Input(event) => match event.modifiers {
+                KeyModifiers::NONE => {
+                    match event.code {
+                        KeyCode::Char(c) => app.on_key(c, terminal.get_cursor().unwrap()),
+                        KeyCode::Left => app.on_left(),
+                        KeyCode::Up => app.on_up(),
+                        KeyCode::Right => app.on_right(),
+                        KeyCode::Down => app.on_down(),
+                        KeyCode::Enter => app.on_enter_dir(),
+                        _ => {},
+                    }
+                },
+                _ => {
+                    match event {
+                        KeyEvent {
+                            code: KeyCode::Char('d'),
+                            modifiers: KeyModifiers::CONTROL,
+                        } => { for i in 0..4 { app.on_down() }},
+                        KeyEvent {
+                            code: KeyCode::Char('u'),
+                            modifiers: KeyModifiers::CONTROL,
+                        } => { for i in 0..4 { app.on_up() }},
+                        _ => {},
+                    }
+                }
             },
             Event::Tick => {
                 app.on_tick();
