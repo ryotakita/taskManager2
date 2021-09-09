@@ -177,7 +177,10 @@ impl Display for Task {
         // into a buffer (the first argument)
         // `write!`は`format!`に似ていますが、フォーマットされた文字列を
         // バッファ（第一引数）に書き込みます。
-        write!(f, "{}", self.folder_name)
+        let current_dir = Regex::new(r"\\[^\\]*$").unwrap();
+        let mut current_dir = current_dir.find(&self.folder_name).unwrap().as_str().to_string();
+        current_dir.remove(0); // 先頭の\が邪魔なので消しておく
+        write!(f, "{}", current_dir)
     }
 }
 
