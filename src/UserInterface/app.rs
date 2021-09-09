@@ -13,6 +13,7 @@ use windows::{
     storage::StorageFile,
     system::Launcher,
 };
+use regex::Regex;
 
 winrt::import!(
     dependencies
@@ -294,81 +295,113 @@ impl<'a> App<'a> {
         self.tabs.previous();
     }
 
-    pub fn on_key(&mut self, c: char, pos: (u16, u16)) {
-        match c {
-            'q' => {
-                self.should_quit = true;
-                let mut file = File::create("task.txt").expect("writeError");
+    // TODO:ファイル読込処理
+    pub fn get_path_of_number(&mut self, number: usize) -> path::PathBuf {
+        let path_target = match number {
+            1 => "C:\\Users\\ryota-kita",
+            2 => "C:\\Users\\ryota-kita\\Documents\\working",
+            3 => "E:\\SRC",
+            4 => "E:",
+            5 => "E:\\機能設計書",
+            _ => "E:",
+        };
+        let path_target = path::Path::new(path_target);
 
-                for task in self.folders.items.iter() {
-                    file.write(format!("{}\n",task).as_bytes()).unwrap();
-                }
-            }
-            't' => {
-                self.show_chart = !self.show_chart;
-            }
-            'j' => {
-                self.on_down();
-            }
-            'k' => {
-                self.on_up();
-            }
-            'c' => {
-                match self.folders.state.selected() {
-                    Some(x) => {
-                        let path_target = &self.folders.items[x].folder_name;
-                        let path_target = path::Path::new(path_target);
-                        let path_target = path::PathBuf::from(path_target);
-                        match path_target.is_dir() {
-                            true => {
-                                self.folders = self.next_dir(path_target.to_str().unwrap());
-                            },
-                            false => {
-                                launch_file(path_target.to_str().unwrap());
-                            }
-                        };
-                    }
-                    _ => {}
-                }
-            }
-            'd' => {
-            }
-            'h' => {
-                match self.folders.state.selected() {
-                    Some(x) => {
-                        let path_target = &self.folders.items[x].folder_name;
-                        let path_target = path::Path::new(path_target);
-                        let path_target = path::PathBuf::from(path_target);
-                        let path_parent = path_target.parent().unwrap().parent();
-                        match path_parent {
-                            Some(x) => {
-                                self.folders = self.next_dir(x.to_str().unwrap());
-                            },
-                            None => {},
-                        }
+        path::PathBuf::from(path_target)
+    }
+
+    pub fn on_key(&mut self, c: char, pos: (u16, u16)) {
+        match c.is_numeric() {
+            true => {
+                let path_target = self.get_path_of_number(c as usize - 48);
+                match path_target.is_dir() {
+                    true => {
+                        self.folders = self.next_dir(path_target.to_str().unwrap());
                     },
-                    _ => {}
-                }
+                    false => {
+                        launch_file(path_target.to_str().unwrap());
+                    }
+                };
             }
-            '1' => {
-                match self.folders.state.selected() {
-                    Some(x) => {
-                        let path_target = "E://SRC";
-                        let path_target = path::Path::new(path_target);
-                        let path_target = path::PathBuf::from(path_target);
-                        match path_target.is_dir() {
-                            true => {
-                                self.folders = self.next_dir(path_target.to_str().unwrap());
-                            },
-                            false => {
-                                launch_file(path_target.to_str().unwrap());
+            false =>{
+                match c {
+                    'q' => {
+                        self.should_quit = true;
+                        let mut file = File::create("task.txt").expect("writeError");
+
+                        for task in self.folders.items.iter() {
+                            file.write(format!("{}\n",task).as_bytes()).unwrap();
+                        }
+                    }
+                    't' => {
+                        self.show_chart = !self.show_chart;
+                    }
+                    'j' => {
+                        self.on_down();
+                    }
+                    'k' => {
+                        self.on_up();
+                    }
+                    'c' => {
+                        match self.folders.state.selected() {
+                            Some(x) => {
+                                let path_target = &self.folders.items[x].folder_name;
+                                let path_target = path::Path::new(path_target);
+                                let path_target = path::PathBuf::from(path_target);
+                                match path_target.is_dir() {
+                                    true => {
+                                        self.folders = self.next_dir(path_target.to_str().unwrap());
+                                    },
+                                    false => {
+                                        launch_file(path_target.to_str().unwrap());
+                                    }
+                                };
                             }
-                        };
+                            _ => {}
+                        }
+                    }
+                    'l' => {
+                        match self.folders.state.selected() {
+                            Some(x) => {
+                                let path_target = &self.folders.items[x].folder_name;
+                                let path_target = path::Path::new(path_target);
+                                let path_target = path::PathBuf::from(path_target);
+                                match path_target.is_dir() {
+                                    true => {
+                                        self.folders = self.next_dir(path_target.to_str().unwrap());
+                                    },
+                                    false => {
+                                        launch_file(path_target.to_str().unwrap());
+                                    }
+                                };
+                            }
+                            _ => {}
+                        }
+                    }
+                    'd' => {
+                    }
+                    'h' => {
+                        match self.folders.state.selected() {
+                            Some(x) => {
+                                let path_target = &self.folders.items[x].folder_name;
+                                let path_target = path::Path::new(path_target);
+                                let path_target = path::PathBuf::from(path_target);
+                                let path_parent = path_target.parent().unwrap().parent();
+                                match path_parent {
+                                    Some(x) => {
+                                        self.folders = self.next_dir(x.to_str().unwrap());
+                                    },
+                                    None => {},
+                                }
+                            },
+                            _ => {}
+                        }
                     }
                     _ => {}
                 }
             }
-            _ => {}
+
+
         }
     }
 
