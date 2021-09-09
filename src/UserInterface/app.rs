@@ -298,13 +298,50 @@ impl<'a> App<'a> {
         self.tabs.previous();
     }
 
+    pub fn on_enter_dir(&mut self) {
+        match self.folders.state.selected() {
+            Some(x) => {
+                let path_target = &self.folders.items[x].folder_name;
+                let path_target = path::Path::new(path_target);
+                let path_target = path::PathBuf::from(path_target);
+                match path_target.is_dir() {
+                    true => {
+                        self.folders = self.next_dir(path_target.to_str().unwrap());
+                    },
+                    false => {
+                        launch_file(path_target.to_str().unwrap());
+                    }
+                };
+            }
+            _ => {}
+        }
+    }
+
+    pub fn on_back_dir(&mut self) {
+        match self.folders.state.selected() {
+            Some(x) => {
+                let path_target = &self.folders.items[x].folder_name;
+                let path_target = path::Path::new(path_target);
+                let path_target = path::PathBuf::from(path_target);
+                let path_parent = path_target.parent().unwrap().parent();
+                match path_parent {
+                    Some(x) => {
+                        self.folders = self.next_dir(x.to_str().unwrap());
+                    },
+                    None => {},
+                }
+            },
+            _ => {}
+        }
+    }
+
     // TODO:ファイル読込処理
     pub fn get_path_of_number(&mut self, number: usize) -> path::PathBuf {
         let path_target = match number {
             1 => "C:\\Users\\ryota-kita",
             2 => "C:\\Users\\ryota-kita\\Documents\\working",
             3 => "E:\\SRC",
-            4 => "E:",
+            4 => "Z:\\",
             5 => "E:\\機能設計書",
             _ => "E:",
         };
@@ -339,67 +376,11 @@ impl<'a> App<'a> {
                     't' => {
                         self.show_chart = !self.show_chart;
                     }
-                    'j' => {
-                        self.on_down();
-                    }
-                    'k' => {
-                        self.on_up();
-                    }
-                    'c' => {
-                        match self.folders.state.selected() {
-                            Some(x) => {
-                                let path_target = &self.folders.items[x].folder_name;
-                                let path_target = path::Path::new(path_target);
-                                let path_target = path::PathBuf::from(path_target);
-                                match path_target.is_dir() {
-                                    true => {
-                                        self.folders = self.next_dir(path_target.to_str().unwrap());
-                                    },
-                                    false => {
-                                        launch_file(path_target.to_str().unwrap());
-                                    }
-                                };
-                            }
-                            _ => {}
-                        }
-                    }
-                    'l' => {
-                        match self.folders.state.selected() {
-                            Some(x) => {
-                                let path_target = &self.folders.items[x].folder_name;
-                                let path_target = path::Path::new(path_target);
-                                let path_target = path::PathBuf::from(path_target);
-                                match path_target.is_dir() {
-                                    true => {
-                                        self.folders = self.next_dir(path_target.to_str().unwrap());
-                                    },
-                                    false => {
-                                        launch_file(path_target.to_str().unwrap());
-                                    }
-                                };
-                            }
-                            _ => {}
-                        }
-                    }
-                    'd' => {
-                    }
-                    'h' => {
-                        match self.folders.state.selected() {
-                            Some(x) => {
-                                let path_target = &self.folders.items[x].folder_name;
-                                let path_target = path::Path::new(path_target);
-                                let path_target = path::PathBuf::from(path_target);
-                                let path_parent = path_target.parent().unwrap().parent();
-                                match path_parent {
-                                    Some(x) => {
-                                        self.folders = self.next_dir(x.to_str().unwrap());
-                                    },
-                                    None => {},
-                                }
-                            },
-                            _ => {}
-                        }
-                    }
+                    'j' => { self.on_down(); }
+                    'k' => { self.on_up(); }
+                    'c' => { self.on_enter_dir(); }
+                    'l' => { self.on_enter_dir(); }
+                    'h' => { self.on_back_dir(); }
                     _ => {}
                 }
             }

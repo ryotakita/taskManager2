@@ -85,6 +85,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 KeyCode::Up => app.on_up(),
                 KeyCode::Right => app.on_right(),
                 KeyCode::Down => app.on_down(),
+                KeyCode::Enter => app.on_enter_dir(),
                 _ => {}
             },
             Event::Tick => {
