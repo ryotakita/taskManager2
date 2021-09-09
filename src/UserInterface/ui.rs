@@ -128,45 +128,45 @@ where
 
         // Draw tasks
         let tasks: Vec<ListItem> = app
-            .tasks
+            .folders
             .items
             .iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}{}", (if i.isDone {"✔"} else {" "}), i.taskname)))]))
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
             .collect();
         let tasks = List::new(tasks)
             .block(Block::default().borders(Borders::ALL).title("Task"))
             //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
             .highlight_style(Style::default().fg(Color::Red))
             .highlight_symbol("> ");
-        f.render_stateful_widget(tasks, chunks[0], &mut app.tasks.state);
+        f.render_stateful_widget(tasks, chunks[0], &mut app.folders.state);
 
         // Draw logs
-        let clients: Vec<ListItem> = app
-            .tasks
-            .items
-            .iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.client))]))
-            .collect();
-        let clients = List::new(clients)
-            .block(Block::default().borders(Borders::ALL).title("Client"))
-            //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
-            .highlight_style(Style::default().fg(Color::Red))
-            .highlight_symbol("> ");
-        f.render_stateful_widget(clients, chunks[1], &mut app.tasks.state);
+        //let clients: Vec<ListItem> = app
+            //.tasks
+            //.items
+            //.iter()
+            //.map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.client))]))
+            //.collect();
+        //let clients = List::new(clients)
+            //.block(Block::default().borders(Borders::ALL).title("Client"))
+            ////.highlight_style(Style::default().add_modifier(Modifier::BOLD))
+            //.highlight_style(Style::default().fg(Color::Red))
+            //.highlight_symbol("> ");
+        //f.render_stateful_widget(clients, chunks[1], &mut app.tasks.state);
 
-        // Draw logs
-        let dates: Vec<ListItem> = app
-            .tasks
-            .items
-            .iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.dates))]))
-            .collect();
-        let dates = List::new(dates)
-            .block(Block::default().borders(Borders::ALL).title("Date"))
-            //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
-            .highlight_style(Style::default().fg(Color::Red))
-            .highlight_symbol("> ");
-        f.render_stateful_widget(dates, chunks[2], &mut app.tasks.state);
+        //// Draw logs
+        //let dates: Vec<ListItem> = app
+            //.tasks
+            //.items
+            //.iter()
+            //.map(|i| ListItem::new(vec![Spans::from(Span::raw(&i.dates))]))
+            //.collect();
+        //let dates = List::new(dates)
+            //.block(Block::default().borders(Borders::ALL).title("Date"))
+            ////.highlight_style(Style::default().add_modifier(Modifier::BOLD))
+            //.highlight_style(Style::default().fg(Color::Red))
+            //.highlight_symbol("> ");
+        //f.render_stateful_widget(dates, chunks[2], &mut app.tasks.state);
     }
     if app.show_chart {
         let x_labels = vec![

@@ -12,3 +12,4 @@ tui = { version = "0.15", default-features = false, features = ['crossterm'] }
 argh = "0.1.0"
 rand = "0.8"
 once_cell = "1.8.0"
+winrt = "0.7.2"

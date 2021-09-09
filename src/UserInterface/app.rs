@@ -1,8 +1,25 @@
 use crate::util::{RandomSignal, SinSignal, StatefulList, TabsState};
 use std::fs::File;
+use std::io::Write;
 use std::io::{self, BufRead, BufReader};
 use once_cell::sync::OnceCell;
 use main;
+use std::fmt::{self, Formatter, Display};
+use std::fs;
+use std::path;
+use std::error::Error;
+use winrt;
+use windows::{
+    storage::StorageFile,
+    system::Launcher,
+};
+
+winrt::import!(
+    dependencies
+        os
+    types
+        windows::system::Launcher
+);
 
 const TASKS: [&str; 24] = [
     "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9", "Item10",
@@ -121,20 +138,45 @@ pub struct Server<'a> {
 
 #[derive(Clone)]
 pub struct Task  {
-    pub taskname: String,
-    pub client: String,
-    pub dates: String,
-    pub isDone: bool,
+    pub folder_name: String,
 }
 
 impl Task {
-    pub fn new(taskname: String, client: String, dates: String, isDone: bool) -> Self {
+    pub fn new(folder_nmae: String) -> Self {
         Task {
-            taskname: taskname.to_string().clone(),
-            client: client.to_string().clone(),
-            dates: dates.to_string().clone(),
-            isDone: isDone,
+            folder_name: folder_nmae.to_string().clone(),
         }
+    }
+}
+
+pub fn read_dir(path: &str) -> Result<Vec<path::PathBuf>, Box<dyn Error>> {
+    let dir = fs::read_dir(path)?;
+    let mut files: Vec<path::PathBuf> = Vec::new();
+    for item in dir.into_iter() {
+        files.push(item?.path());
+    }
+    Ok(files)
+}
+
+pub fn launch_file(path: &str) -> winrt::Result<()> {
+    // ファイルパスから `StorageFile` オブジェクトを取得
+    let file = StorageFile::get_file_from_path_async(path).unwrap().get().unwrap();
+
+    // 既定のプログラムを使用して `file` を開く
+    Launcher::launch_file_async(file).unwrap().get().unwrap();
+    Ok(())
+}
+
+impl Display for Task {
+    // `f` is a buffer, and this method must write the formatted string into it
+    // `f` はバッファです。このメソッドは
+    // ここにフォーマットされた文字列を書き込みます。
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        // `write!` is like `format!`, but it will write the formatted string
+        // into a buffer (the first argument)
+        // `write!`は`format!`に似ていますが、フォーマットされた文字列を
+        // バッファ（第一引数）に書き込みます。
+        write!(f, "{}", self.folder_name)
     }
 }
 
@@ -145,7 +187,7 @@ pub struct App<'a> {
     pub show_chart: bool,
     pub progress: f64,
     pub sparkline: Signal<RandomSignal>,
-    pub tasks: StatefulList<Task>,
+    pub folders: StatefulList<Task>,
     pub logs: StatefulList<(&'a str, &'a str)>,
     pub signals: Signals,
     pub barchart: Vec<(&'a str, u64)>,
@@ -163,23 +205,10 @@ impl<'a> App<'a> {
         let sin2_points = sin_signal2.by_ref().take(200).collect();
 
         let mut task_list: Vec<Task> = Vec::new();
-        for task_str in BufReader::new(File::open("task.txt").unwrap()).lines() {
-            let mut count = 0;
-            let mut name = String::new();
-            let mut client = String::new();
-            let mut date = String::new();
-            let mut isDone = true;
-            for str in task_str.unwrap().split(',') {
-                match count {
-                    0 => { name = str.to_string(); },
-                    1 => { client = str.to_string(); },
-                    2 => { date = str.to_string(); },
-                    3 => { if str == "true" {isDone = true;} else {isDone = false;} }
-                    _ => { break; },
-                }
-                count+=1;
+        for folders in read_dir("E:\\SRC"){
+            for folder in folders {
+                task_list.push(Task::new(folder.to_str().unwrap().to_string()));
             }
-            task_list.push(Task::new(name, client, date, isDone));
         }
 
         App {
@@ -193,7 +222,7 @@ impl<'a> App<'a> {
                 points: sparkline_points,
                 tick_rate: 1,
             },
-            tasks: StatefulList::with_items(task_list),
+            folders: StatefulList::with_items(task_list),
             logs: StatefulList::with_items(LOGS.to_vec()),
             signals: Signals {
                 sin1: Signal {
@@ -239,12 +268,22 @@ impl<'a> App<'a> {
         }
     }
 
+    pub fn next_dir(&self, path: &str) -> StatefulList<Task>{
+        let mut task_list: Vec<Task> = Vec::new();
+        for folders in read_dir(path){
+            for folder in folders {
+                task_list.push(Task::new(folder.to_str().unwrap().to_string()));
+            }
+        }
+        StatefulList::with_items(task_list)
+    }
+
     pub fn on_up(&mut self) {
-        self.tasks.previous();
+        self.folders.previous();
     }
 
     pub fn on_down(&mut self) {
-        self.tasks.next();
+        self.folders.next();
     }
 
     pub fn on_right(&mut self) {
@@ -259,6 +298,11 @@ impl<'a> App<'a> {
         match c {
             'q' => {
                 self.should_quit = true;
+                let mut file = File::create("task.txt").expect("writeError");
+
+                for task in self.folders.items.iter() {
+                    file.write(format!("{}\n",task).as_bytes()).unwrap();
+                }
             }
             't' => {
                 self.show_chart = !self.show_chart;
@@ -270,9 +314,58 @@ impl<'a> App<'a> {
                 self.on_up();
             }
             'c' => {
-                match self.tasks.state.selected() {
-                    Some(x) => {self.tasks.items[x].isDone = !self.tasks.items[x].isDone;},
-                    None  => {}
+                match self.folders.state.selected() {
+                    Some(x) => {
+                        let path_target = &self.folders.items[x].folder_name;
+                        let path_target = path::Path::new(path_target);
+                        let path_target = path::PathBuf::from(path_target);
+                        match path_target.is_dir() {
+                            true => {
+                                self.folders = self.next_dir(path_target.to_str().unwrap());
+                            },
+                            false => {
+                                launch_file(path_target.to_str().unwrap());
+                            }
+                        };
+                    }
+                    _ => {}
+                }
+            }
+            'd' => {
+            }
+            'h' => {
+                match self.folders.state.selected() {
+                    Some(x) => {
+                        let path_target = &self.folders.items[x].folder_name;
+                        let path_target = path::Path::new(path_target);
+                        let path_target = path::PathBuf::from(path_target);
+                        let path_parent = path_target.parent().unwrap().parent();
+                        match path_parent {
+                            Some(x) => {
+                                self.folders = self.next_dir(x.to_str().unwrap());
+                            },
+                            None => {},
+                        }
+                    },
+                    _ => {}
+                }
+            }
+            '1' => {
+                match self.folders.state.selected() {
+                    Some(x) => {
+                        let path_target = "E://SRC";
+                        let path_target = path::Path::new(path_target);
+                        let path_target = path::PathBuf::from(path_target);
+                        match path_target.is_dir() {
+                            true => {
+                                self.folders = self.next_dir(path_target.to_str().unwrap());
+                            },
+                            false => {
+                                launch_file(path_target.to_str().unwrap());
+                            }
+                        };
+                    }
+                    _ => {}
                 }
             }
             _ => {}

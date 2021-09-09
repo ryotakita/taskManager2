@@ -80,16 +80,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         terminal.draw(|f| ui::draw(f, &mut app))?;
         match rx.recv()? {
             Event::Input(event) => match event.code {
-                KeyCode::Char('q') => {
-                    disable_raw_mode()?;
-                    execute!(
-                        terminal.backend_mut(),
-                        LeaveAlternateScreen,
-                        DisableMouseCapture
-                    )?;
-                    terminal.show_cursor()?;
-                    break;
-                }
                 KeyCode::Char(c) => app.on_key(c, terminal.get_cursor().unwrap()),
                 KeyCode::Left => app.on_left(),
                 KeyCode::Up => app.on_up(),
@@ -102,6 +92,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
         if app.should_quit {
+            disable_raw_mode()?;
+            execute!(
+                terminal.backend_mut(),
+                LeaveAlternateScreen,
+                DisableMouseCapture
+            )?;
+            terminal.show_cursor()?;
             break;
         }
     }
