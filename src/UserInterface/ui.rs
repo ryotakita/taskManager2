@@ -128,7 +128,7 @@ where
 
         // Draw tasks
         let tasks: Vec<ListItem> = app
-            .folders
+            .folders[0]
             .items
             .iter()
             .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
@@ -138,7 +138,7 @@ where
             //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
             .highlight_style(Style::default().fg(Color::Red))
             .highlight_symbol("> ");
-        f.render_stateful_widget(tasks, chunks[0], &mut app.folders.state);
+        f.render_stateful_widget(tasks, chunks[0], &mut app.folders[0].state);
 
         // Draw logs
         //let clients: Vec<ListItem> = app

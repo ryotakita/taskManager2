@@ -191,12 +191,13 @@ pub struct App<'a> {
     pub show_chart: bool,
     pub progress: f64,
     pub sparkline: Signal<RandomSignal>,
-    pub folders: StatefulList<Task>,
+    pub folders: Vec<StatefulList<Task>>,
     pub logs: StatefulList<(&'a str, &'a str)>,
     pub signals: Signals,
     pub barchart: Vec<(&'a str, u64)>,
     pub servers: Vec<Server<'a>>,
     pub enhanced_graphics: bool,
+    pub folders_index: usize,
 }
 
 impl<'a> App<'a> {
@@ -208,10 +209,17 @@ impl<'a> App<'a> {
         let mut sin_signal2 = SinSignal::new(0.1, 2.0, 10.0);
         let sin2_points = sin_signal2.by_ref().take(200).collect();
 
-        let mut task_list: Vec<Task> = Vec::new();
+        let mut task_list_for1: Vec<Task> = Vec::new();
         for folders in read_dir("E:\\SRC"){
             for folder in folders {
-                task_list.push(Task::new(folder.to_str().unwrap().to_string()));
+                task_list_for1.push(Task::new(folder.to_str().unwrap().to_string()));
+            }
+        }
+
+        let mut task_list_for2: Vec<Task> = Vec::new();
+        for folders in read_dir("E:\\SRC"){
+            for folder in folders {
+                task_list_for2.push(Task::new(folder.to_str().unwrap().to_string()));
             }
         }
 
@@ -226,7 +234,8 @@ impl<'a> App<'a> {
                 points: sparkline_points,
                 tick_rate: 1,
             },
-            folders: StatefulList::with_items(task_list),
+            folders: vec![StatefulList::with_items(task_list_for1),StatefulList::with_items(task_list_for2)] ,
+            folders_index: 0,
             logs: StatefulList::with_items(LOGS.to_vec()),
             signals: Signals {
                 sin1: Signal {
@@ -283,11 +292,11 @@ impl<'a> App<'a> {
     }
 
     pub fn on_up(&mut self) {
-        self.folders.previous();
+        self.folders[self.folders_index].previous();
     }
 
     pub fn on_down(&mut self) {
-        self.folders.next();
+        self.folders[self.folders_index].next();
     }
 
     pub fn on_right(&mut self) {
@@ -299,14 +308,14 @@ impl<'a> App<'a> {
     }
 
     pub fn on_enter_dir(&mut self) {
-        match self.folders.state.selected() {
+        match self.folders[self.folders_index].state.selected() {
             Some(x) => {
-                let path_target = &self.folders.items[x].folder_name;
+                let path_target = &self.folders[self.folders_index].items[x].folder_name;
                 let path_target = path::Path::new(path_target);
                 let path_target = path::PathBuf::from(path_target);
                 match path_target.is_dir() {
                     true => {
-                        self.folders = self.next_dir(path_target.to_str().unwrap());
+                        self.folders[self.folders_index] = self.next_dir(path_target.to_str().unwrap());
                     },
                     false => {
                         launch_file(path_target.to_str().unwrap());
@@ -318,15 +327,15 @@ impl<'a> App<'a> {
     }
 
     pub fn on_back_dir(&mut self) {
-        match self.folders.state.selected() {
+        match self.folders[self.folders_index].state.selected() {
             Some(x) => {
-                let path_target = &self.folders.items[x].folder_name;
+                let path_target = &self.folders[self.folders_index].items[x].folder_name;
                 let path_target = path::Path::new(path_target);
                 let path_target = path::PathBuf::from(path_target);
                 let path_parent = path_target.parent().unwrap().parent();
                 match path_parent {
                     Some(x) => {
-                        self.folders = self.next_dir(x.to_str().unwrap());
+                        self.folders[self.folders_index] = self.next_dir(x.to_str().unwrap());
                     },
                     None => {},
                 }
@@ -336,15 +345,15 @@ impl<'a> App<'a> {
     }
 
     pub fn on_all_disp(&mut self) {
-        match self.folders.state.selected() {
+        match self.folders[self.folders_index].state.selected() {
             Some(x) => {
-                let path_target = &self.folders.items[x].folder_name;
+                let path_target = &self.folders[self.folders_index].items[x].folder_name;
                 let path_target = path::Path::new(path_target);
                 let path_target = path::PathBuf::from(path_target);
                 let path_parent = path_target.parent();
                 match path_parent {
                     Some(x) => {
-                        self.folders = self.next_dir(x.to_str().unwrap());
+                        self.folders[self.folders_index] = self.next_dir(x.to_str().unwrap());
                     },
                     None => {},
                 }
@@ -371,7 +380,7 @@ impl<'a> App<'a> {
     pub fn search_string_in_this_path(&mut self, search: &str) {
         // TODO:filterがなぜか使えない...
         let mut lst_new = Vec::new();
-        for i in self.folders.items.iter() {
+        for i in self.folders[self.folders_index].items.iter() {
             match i.folder_name.to_lowercase().contains(&search.to_lowercase()) {
                 true => {lst_new.push(i.clone());},
                 false => {}
@@ -381,7 +390,7 @@ impl<'a> App<'a> {
         match lst_new.is_empty() {
             true => {},
             false => {
-                self.folders = StatefulList::with_items(lst_new);
+                self.folders[self.folders_index] = StatefulList::with_items(lst_new);
             }
         }
         
@@ -393,7 +402,7 @@ impl<'a> App<'a> {
                 let path_target = self.get_path_of_number(c as usize - 48);
                 match path_target.is_dir() {
                     true => {
-                        self.folders = self.next_dir(path_target.to_str().unwrap());
+                        self.folders[self.folders_index] = self.next_dir(path_target.to_str().unwrap());
                     },
                     false => {
                         launch_file(path_target.to_str().unwrap());
@@ -406,7 +415,7 @@ impl<'a> App<'a> {
                         self.should_quit = true;
                         let mut file = File::create("task.txt").expect("writeError");
 
-                        for task in self.folders.items.iter() {
+                        for task in self.folders[self.folders_index].items.iter() {
                             file.write(format!("{}\n",task).as_bytes()).unwrap();
                         }
                     }
