@@ -378,8 +378,13 @@ impl<'a> App<'a> {
             }
         }
 
+        match lst_new.is_empty() {
+            true => {},
+            false => {
+                self.folders = StatefulList::with_items(lst_new);
+            }
+        }
         
-        self.folders = StatefulList::with_items(lst_new);
     }
 
     pub fn on_key(&mut self, c: char, pos: (u16, u16)) {
