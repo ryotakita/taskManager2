@@ -122,7 +122,7 @@ where
         .split(area);
     {
         let chunks = Layout::default()
-            .constraints([Constraint::Percentage(50), Constraint::Percentage(20), Constraint::Percentage(30)].as_ref())
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
             .direction(Direction::Horizontal)
             .split(chunks[0]);
 
@@ -139,6 +139,19 @@ where
             .highlight_style(Style::default().fg(Color::Red))
             .highlight_symbol("> ");
         f.render_stateful_widget(tasks, chunks[0], &mut app.folders[0].state);
+
+        let tasks: Vec<ListItem> = app
+            .folders[1]
+            .items
+            .iter()
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
+            .collect();
+        let tasks = List::new(tasks)
+            .block(Block::default().borders(Borders::ALL).title("Task"))
+            //.highlight_style(Style::default().add_modifier(Modifier::BOLD))
+            .highlight_style(Style::default().fg(Color::Red))
+            .highlight_symbol("> ");
+        f.render_stateful_widget(tasks, chunks[1], &mut app.folders[1].state);
 
         // Draw logs
         //let clients: Vec<ListItem> = app
@@ -242,21 +255,21 @@ where
         ]),
         Spans::from(vec![
             Span::raw("  key\""),
-            Span::styled("c", Style::default().add_modifier(Modifier::BOLD).fg(Color::Red)),
+            Span::styled("e", Style::default().add_modifier(Modifier::BOLD).fg(Color::Red)),
             Span::raw("\": "),
-            Span::from("完了したタスクに✔を入れる"),
+            Span::from("システムの終了"),
         ]),
         Spans::from(vec![
             Span::raw("  key\""),
-            Span::styled("d", Style::default().add_modifier(Modifier::BOLD).fg(Color::Blue)),
+            Span::styled("l", Style::default().add_modifier(Modifier::BOLD).fg(Color::Blue)),
             Span::raw("\": "),
-            Span::from("タスクを消去する"),
+            Span::from("右のペインにフォーカスする"),
         ]),
         Spans::from(vec![
             Span::raw("  key\""),
-            Span::styled("a", Style::default().add_modifier(Modifier::BOLD).fg(Color::Green)),
+            Span::styled("h", Style::default().add_modifier(Modifier::BOLD).fg(Color::Green)),
             Span::raw("\": "),
-            Span::from("タスクを追加する"),
+            Span::from("左のペインにフォーカスする"),
         ]),
         Spans::from(
             "One more thing is that it should display unicode characters: 10€"

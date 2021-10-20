@@ -362,6 +362,14 @@ impl<'a> App<'a> {
         }
     }
 
+    pub fn on_focus_left_pain(&mut self) {
+        self.folders_index = 0;
+    }
+
+    pub fn on_focus_right_pain(&mut self) {
+        self.folders_index = 1;
+    }
+
     // TODO:ファイル読込処理
     pub fn get_path_of_number(&mut self, number: usize) -> path::PathBuf {
         let path_target = match number {
@@ -411,7 +419,7 @@ impl<'a> App<'a> {
             }
             false =>{
                 match c {
-                    'q' => {
+                    'e' => {
                         self.should_quit = true;
                         let mut file = File::create("task.txt").expect("writeError");
 
@@ -425,8 +433,9 @@ impl<'a> App<'a> {
                     'j' => { self.on_down(); }
                     'k' => { self.on_up(); }
                     'c' => { self.on_enter_dir(); }
-                    'l' => { self.on_enter_dir(); }
-                    'h' => { self.on_back_dir(); }
+                    'l' => { self.on_focus_right_pain(); }
+                    'h' => { self.on_focus_left_pain(); }
+                    'q' => { self.on_back_dir(); }
                     _ => {}
                 }
             }
