@@ -20,7 +20,10 @@ winrt::import!(
         os
     types
         windows::system::Launcher
+        windows::application_model::data_transfer::*
 );
+use windows::application_model::data_transfer::{DataPackage, Clipboard};
+
 
 const TASKS: [&str; 24] = [
     "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9", "Item10",
@@ -368,6 +371,22 @@ impl<'a> App<'a> {
 
     pub fn on_focus_right_pain(&mut self) {
         self.folders_index = 1;
+    }
+
+    pub fn copy_path(&mut self) {
+        match self.folders[self.folders_index].state.selected() {
+            Some(x) => {
+                let path_target = &self.folders[self.folders_index].items[x].folder_name;
+                let path_target = path::Path::new(path_target);
+                let path_target = path_target.to_str().unwrap();
+                let content = DataPackage::new().unwrap();
+                content.set_text(path_target.to_string());
+
+                Clipboard::set_content(content);
+                Clipboard::flush();
+            }
+            _ => {}
+        }
     }
 
     // TODO:ファイル読込処理

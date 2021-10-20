@@ -128,6 +128,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                             code: KeyCode::Char('u'),
                             modifiers: KeyModifiers::CONTROL,
                         } => { for i in 0..4 { app.on_up() }},
+                        KeyEvent {
+                            code: KeyCode::Char('c'),
+                            modifiers: KeyModifiers::CONTROL,
+                        } => { app.copy_path(); },
                         _ => {},
                     }
                 }
