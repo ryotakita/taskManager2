@@ -132,6 +132,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                             code: KeyCode::Char('c'),
                             modifiers: KeyModifiers::CONTROL,
                         } => { app.copy_path(); },
+                        KeyEvent {
+                            code: KeyCode::Char('v'),
+                            modifiers: KeyModifiers::CONTROL,
+                        } => { app.paste_clipboard(); },
                         _ => {},
                     }
                 }

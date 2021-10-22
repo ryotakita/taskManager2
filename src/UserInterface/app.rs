@@ -1,4 +1,5 @@
 use crate::util::{RandomSignal, SinSignal, StatefulList, TabsState};
+use std::env;
 use std::fs::File;
 use std::io::Write;
 use serde::{Deserialize, Serialize};
@@ -8,6 +9,8 @@ use main;
 use std::fmt::{self, Formatter, Display};
 use std::fs;
 use std::path;
+use std::process::{Command, Stdio};
+use std::io::prelude;
 use std::error::Error;
 use winrt;
 use windows::{
@@ -399,7 +402,43 @@ impl<'a> App<'a> {
         }
     }
 
-    // TODO:ファイル読込処理
+    pub fn paste_clipboard(&mut self) {
+        match self.folders[self.folders_index].state.selected() {
+            Some(x) => {
+                let path_target = &self.folders[self.folders_index].items[x].folder_name;
+                let path_target = path::Path::new(path_target);
+                let path_parent = path_target.parent().unwrap();
+
+                let current_dir = env::current_dir().unwrap();
+                let python_exe_dir = path::Path::new("/ClipBoard_Python");
+                assert!(env::set_current_dir(&python_exe_dir).is_ok());
+
+                let mut child = Command::new("python")
+                                .args(&["main.py"])
+                                .stdout(Stdio::piped())
+                                .spawn()
+                                .expect("failed to kick python");
+
+                let mut stdout = child.stdout.take().unwrap();
+
+                let reader = BufReader::new(stdout);
+                let mut file = String::new();
+                for line in reader.lines() {
+                    file = line.unwrap();
+                }
+                
+                let path = path::Path::new(file.as_str());
+                let path = path::PathBuf::from(path);
+                self.folders[self.folders_index] = self.next_dir(path.to_str().unwrap());
+                
+                
+                assert!(env::set_current_dir(&current_dir).is_ok());
+                
+            }
+            _ => {}
+        }
+    }
+
     pub fn get_path_of_number(&mut self, number: usize) -> path::PathBuf {
         let file = File::open("PathShortCut.json").expect("FileNotFoundError");
         let reader = BufReader::new(file);
