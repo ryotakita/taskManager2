@@ -1,6 +1,7 @@
 use crate::util::{RandomSignal, SinSignal, StatefulList, TabsState};
 use std::fs::File;
 use std::io::Write;
+use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, BufReader};
 use once_cell::sync::OnceCell;
 use main;
@@ -98,6 +99,15 @@ const EVENTS: [(&str, u64); 24] = [
     ("B23", 3),
     ("B24", 5),
 ];
+
+#[derive(Serialize, Deserialize)]
+pub struct PathShortCut {
+    one: String,
+    two: String,
+    three: String,
+    four: String,
+    five: String,
+}
 
 pub struct Signal<S: Iterator> {
     source: S,
@@ -391,16 +401,19 @@ impl<'a> App<'a> {
 
     // TODO:ファイル読込処理
     pub fn get_path_of_number(&mut self, number: usize) -> path::PathBuf {
-        let path_target = match number {
-            1 => "C:\\Users\\ryota-kita",
-            2 => "C:\\Users\\ryota-kita\\Documents\\working",
-            3 => "E:\\SRC",
-            4 => "Z:\\",
-            5 => "E:\\機能設計書",
-            _ => "E:",
-        };
-        let path_target = path::Path::new(path_target);
+        let file = File::open("PathShortCut.json").expect("FileNotFoundError");
+        let reader = BufReader::new(file);
 
+        let path_shortcut: PathShortCut = serde_json::from_reader(reader).expect("json's dataformat is invalid.");
+        let path_target = match number {
+            1 => &path_shortcut.one,
+            2 => &path_shortcut.two,
+            3 => &path_shortcut.three,
+            4 => &path_shortcut.four,
+            5 => &path_shortcut.five,
+            _ => &path_shortcut.five,
+        };
+        path::Path::new(path_target);
         path::PathBuf::from(path_target)
     }
 
